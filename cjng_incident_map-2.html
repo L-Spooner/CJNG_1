@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CJNG Retaliation Map — El Mencho Death Feb 22–23, 2026</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --red: #ff2233;
+    --orange: #ff6600;
+    --yellow: #ffcc00;
+    --dim: #ffaa00;
+    --bg: #08090d;
+    --panel: #0d0f18;
+    --border: #1e2235;
+    --text: #c8d0e8;
+    --muted: #5a6080;
+    --glow-r: rgba(255,34,51,0.4);
+    --glow-o: rgba(255,102,0,0.4);
+    --glow-y: rgba(255,204,0,0.3);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--panel);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1000;
+  }
+  .logo-block {
+    display: flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+  .logo-eyebrow {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .logo-title {
+    font-size: 22px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    color: #fff;
+    text-transform: uppercase;
+  }
+  .logo-title span { color: var(--red); }
+  .header-divider { width: 1px; height: 36px; background: var(--border); }
+  .stat-pill {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .stat-value.red { color: var(--red); }
+  .stat-value.orange { color: var(--orange); }
+  .stat-value.yellow { color: var(--yellow); }
+  .stat-value.white { color: #fff; }
+
+  .header-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .pulse-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--red);
+    animation: pulseRed 1.4s ease infinite;
+  }
+  @keyframes pulseRed {
+    0%,100% { box-shadow: 0 0 0 0 var(--glow-r); opacity:1; }
+    50% { box-shadow: 0 0 0 6px transparent; opacity:0.7; }
+  }
+  .live-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: var(--red);
+    text-transform: uppercase;
+  }
+  .timestamp {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* ── LAYOUT ── */
+  .body-wrap {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+  }
+
+  /* ── SIDEBAR ── */
+  aside {
+    width: 280px;
+    background: var(--panel);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    overflow: hidden;
+  }
+  .sidebar-section {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+  }
+  .section-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 3px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+
+  /* legend */
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 5px 0;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .legend-item:hover { opacity: 0.8; }
+  .legend-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-text { font-size: 13px; font-weight: 600; }
+  .legend-count {
+    margin-left: auto;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+  }
+
+  /* intensity scale */
+  .intensity-bar {
+    height: 12px;
+    border-radius: 2px;
+    background: linear-gradient(to right, #ffcc00, #ff6600, #ff2233);
+    margin-bottom: 6px;
+    position: relative;
+  }
+  .intensity-labels {
+    display: flex;
+    justify-content: space-between;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+  }
+
+  /* filter buttons */
+  .filter-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 4px 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    border-radius: 2px;
+  }
+  .filter-btn.active, .filter-btn:hover {
+    border-color: var(--red);
+    color: var(--red);
+    background: rgba(255,34,51,0.08);
+  }
+
+  /* incident list */
+  .incident-list {
+    flex: 1;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  .incident-item {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(30,34,53,0.7);
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .incident-item:hover { background: rgba(255,34,51,0.05); }
+  .incident-state {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+  .incident-city {
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    margin-bottom: 3px;
+  }
+  .incident-detail {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+  }
+  .incident-tag {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 2px;
+    font-size: 9px;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-right: 4px;
+  }
+  .tag-fire { background: rgba(255,34,51,0.15); color: var(--red); border: 1px solid rgba(255,34,51,0.3); }
+  .tag-block { background: rgba(255,102,0,0.15); color: var(--orange); border: 1px solid rgba(255,102,0,0.3); }
+  .tag-conflict { background: rgba(255,204,0,0.1); color: var(--yellow); border: 1px solid rgba(255,204,0,0.3); }
+
+  /* ── MAP ── */
+  #map {
+    flex: 1;
+    position: relative;
+  }
+  .leaflet-container {
+    background: #08090d;
+    font-family: 'Barlow Condensed', sans-serif;
+  }
+
+  /* custom popup */
+  .leaflet-popup-content-wrapper {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,34,51,0.2);
+    color: var(--text);
+    padding: 0;
+  }
+  .leaflet-popup-content { margin: 0; }
+  .leaflet-popup-tip { background: var(--panel); }
+  .leaflet-popup-close-button { color: var(--muted) !important; font-size: 16px !important; top: 8px !important; right: 10px !important; }
+
+  .popup-inner { padding: 14px 16px; min-width: 220px; }
+  .popup-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+  .popup-icon { font-size: 18px; }
+  .popup-state {
+    font-size: 10px;
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .popup-city {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .popup-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    margin-bottom: 4px;
+  }
+  .popup-key { color: var(--muted); font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 1px; }
+  .popup-val { font-weight: 600; color: var(--text); }
+  .popup-desc { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.5; border-top: 1px solid var(--border); padding-top: 8px; }
+  .popup-source { font-size: 9px; color: #3a4060; margin-top: 6px; font-family: 'Share Tech Mono', monospace; }
+
+  /* map overlay text */
+  .map-watermark {
+    position: absolute;
+    bottom: 60px;
+    right: 12px;
+    z-index: 999;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: rgba(90,96,128,0.6);
+    letter-spacing: 1px;
+    text-align: right;
+    pointer-events: none;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    background: var(--panel);
+    border-top: 1px solid var(--border);
+    padding: 6px 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    flex-shrink: 0;
+    z-index: 1000;
+  }
+  .footer-item {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    color: var(--muted);
+  }
+  .footer-item span { color: var(--text); }
+  .footer-sep { width: 1px; height: 12px; background: var(--border); }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  /* ── LINKEDIN SHARE ── */
+  .share-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: #0077B5;
+    border: none;
+    color: #fff;
+    padding: 7px 14px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.15s, box-shadow 0.15s;
+    white-space: nowrap;
+    text-transform: uppercase;
+  }
+  .share-btn:hover {
+    background: #005f91;
+    box-shadow: 0 0 16px rgba(0,119,181,0.5);
+  }
+  .share-btn svg { flex-shrink: 0; }
+
+  /* Modal overlay */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(4,5,10,0.85);
+    z-index: 9999;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    width: 540px;
+    max-width: 94vw;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(0,119,181,0.2);
+    overflow: hidden;
+    animation: modalIn 0.2s ease;
+  }
+  @keyframes modalIn {
+    from { opacity:0; transform:scale(0.96) translateY(10px); }
+    to   { opacity:1; transform:scale(1) translateY(0); }
+  }
+  .modal-header {
+    background: #0077B5;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .modal-header-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.5px;
+  }
+  .modal-header-sub {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-left: auto;
+  }
+  .modal-body { padding: 18px; }
+  .modal-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .modal-textarea {
+    width: 100%;
+    background: #080a14;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    padding: 12px;
+    border-radius: 3px;
+    resize: vertical;
+    min-height: 170px;
+    transition: border-color 0.15s;
+    outline: none;
+  }
+  .modal-textarea:focus { border-color: #0077B5; }
+  .modal-url-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    align-items: center;
+  }
+  .modal-url {
+    flex: 1;
+    background: #080a14;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    padding: 7px 10px;
+    border-radius: 3px;
+    outline: none;
+  }
+  .copy-url-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 7px 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 3px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .copy-url-btn:hover { border-color: #0077B5; color: #0077B5; }
+  .copy-url-btn.copied { border-color: #22cc66; color: #22cc66; }
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+  }
+  .modal-cancel {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 9px 18px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 3px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .modal-cancel:hover { border-color: var(--muted); color: var(--text); }
+  .modal-post-btn {
+    flex: 1;
+    background: #0077B5;
+    border: none;
+    color: #fff;
+    padding: 9px 18px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: background 0.15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .modal-post-btn:hover { background: #005f91; }
+  .modal-copy-text-btn {
+    background: transparent;
+    border: 1px solid #0077B5;
+    color: #0077B5;
+    padding: 9px 16px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 3px;
+    text-transform: uppercase;
+    transition: all 0.15s;
+  }
+  .modal-copy-text-btn:hover, .modal-copy-text-btn.copied { background: rgba(0,119,181,0.1); }
+  .char-count {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    text-align: right;
+    margin-top: 4px;
+  }
+  .char-count.warn { color: var(--yellow); }
+  .char-count.over  { color: var(--red); }
+
+  /* scanning line animation on header */
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--red), transparent);
+    animation: scan 3s linear infinite;
+    opacity: 0.5;
+  }
+  @keyframes scan {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(100%); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-block">
+    <div class="logo-eyebrow">Intelligence Dashboard · Mexico Security Crisis</div>
+    <div class="logo-title">CJNG <span>Retaliation</span> Map</div>
+  </div>
+  <div class="header-divider"></div>
+  <div class="stat-pill">
+    <div class="stat-label">Blockades</div>
+    <div class="stat-value red">252</div>
+  </div>
+  <div class="header-divider"></div>
+  <div class="stat-pill">
+    <div class="stat-label">States Affected</div>
+    <div class="stat-value orange">20</div>
+  </div>
+  <div class="header-divider"></div>
+  <div class="stat-pill">
+    <div class="stat-label">Confirmed Dead</div>
+    <div class="stat-value red">14+</div>
+  </div>
+  <div class="header-divider"></div>
+  <div class="stat-pill">
+    <div class="stat-label">Flights Cancelled</div>
+    <div class="stat-value yellow">50+</div>
+  </div>
+  <div class="header-divider"></div>
+  <div class="stat-pill">
+    <div class="stat-label">Operation</div>
+    <div class="stat-value white">Tapalpa, Jalisco</div>
+  </div>
+  <div class="header-right">
+    <div class="pulse-dot"></div>
+    <div class="live-label">Live Situation</div>
+    <div class="timestamp" id="ts"></div>
+    <button class="share-btn" onclick="openShareModal()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      Share on LinkedIn
+    </button>
+  </div>
+</header>
+
+<!-- LINKEDIN SHARE MODAL -->
+<div class="modal-overlay" id="shareModal" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      <div class="modal-header-title">Share to LinkedIn</div>
+      <div class="modal-header-sub">Customize your post</div>
+    </div>
+    <div class="modal-body">
+      <div class="modal-label">Post Text</div>
+      <textarea class="modal-textarea" id="liPostText" oninput="updateCharCount()"></textarea>
+      <div class="char-count" id="charCount">0 / 3000</div>
+      <div class="modal-url-row">
+        <div class="modal-label" style="margin:0;align-self:center;white-space:nowrap;">Page URL</div>
+        <input class="modal-url" id="shareUrl" readonly />
+        <button class="copy-url-btn" id="copyUrlBtn" onclick="copyUrl()">Copy URL</button>
+      </div>
+      <div class="modal-actions">
+        <button class="modal-cancel" onclick="closeShareModal()">Cancel</button>
+        <button class="modal-copy-text-btn" id="copyTextBtn" onclick="copyPostText()">Copy Text</button>
+        <button class="modal-post-btn" onclick="postToLinkedIn()">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="white"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          Open LinkedIn &amp; Post
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="body-wrap">
+  <aside>
+    <div class="sidebar-section">
+      <div class="section-title">Incident Type</div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#ff2233;box-shadow:0 0 6px #ff2233;"></div>
+        <div class="legend-text" style="color:#ff2233;">Vehicle Fires / Arson</div>
+        <div class="legend-count" style="color:#ff2233;">HIGH</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#ff6600;box-shadow:0 0 6px #ff6600;"></div>
+        <div class="legend-text" style="color:#ff6600;">Road Blockades</div>
+        <div class="legend-count" style="color:#ff6600;">MED</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#ffcc00;box-shadow:0 0 6px #ffcc00;"></div>
+        <div class="legend-text" style="color:#ffcc00;">Armed Conflict / Shootings</div>
+        <div class="legend-count" style="color:#ffcc00;">ACTIVE</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#8844ff;box-shadow:0 0 6px #8844ff;"></div>
+        <div class="legend-text" style="color:#8844ff;">Operation Origin</div>
+        <div class="legend-count" style="color:#8844ff;">★</div>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title">Intensity Scale (Blockades/State)</div>
+      <div class="intensity-bar"></div>
+      <div class="intensity-labels">
+        <span>Low (1–5)</span><span>Moderate (6–20)</span><span>Critical (20+)</span>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <div class="section-title">Filter</div>
+      <div class="filter-row">
+        <button class="filter-btn active" onclick="filterAll()">ALL</button>
+        <button class="filter-btn" onclick="filterType('fire')">🔥 FIRES</button>
+        <button class="filter-btn" onclick="filterType('block')">🚧 BLOCKS</button>
+        <button class="filter-btn" onclick="filterType('conflict')">⚡ CONFLICT</button>
+      </div>
+    </div>
+
+    <div class="section-title" style="padding:14px 16px 0;">Incident Log</div>
+    <div class="incident-list" id="incidentList"></div>
+  </aside>
+
+  <div id="map"></div>
+  <div class="map-watermark">
+    DATA: NBC News · Al Jazeera · AP · CBS News · Riviera Maya News · Wikipedia<br>
+    Feb 22–23, 2026 · All coordinates approximate
+  </div>
+</div>
+
+<footer>
+  <div class="footer-item">TRIGGER EVENT: <span>El Mencho killed in Tapalpa, Jalisco · Feb 22, 2026</span></div>
+  <div class="footer-sep"></div>
+  <div class="footer-item">TARGET: <span>Nemesio Rubén Oseguera Cervantes "El Mencho" · CJNG Founder · Age 59</span></div>
+  <div class="footer-sep"></div>
+  <div class="footer-item">US SUPPORT: <span>Intelligence provided via Joint Interagency Task Force</span></div>
+  <div class="footer-sep"></div>
+  <div class="footer-item">STATUS: <span style="color:#ffcc00;">Situation partially stabilized Mon Feb 23 AM · Michoacán still active</span></div>
+</footer>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+// Compiled from: NBC News, AP, Al Jazeera, CBS News, PBS, Axios, Riviera Maya News,
+// Wikipedia (2026 Jalisco operation), Mexico News Daily, OPB, News4SA
+const incidents = [
+  {
+    id: 1, type: 'origin',
+    city: 'Tapalpa', state: 'Jalisco',
+    lat: 19.9432, lng: -103.7602,
+    severity: 5,
+    fires: 0, blockades: 0,
+    desc: 'Operation site where El Mencho was mortally wounded by Mexican Army. 4 CJNG members killed on-site. 3 members of armed forces wounded.',
+    source: 'Mexico Defense Secretariat / NBC News / AP'
+  },
+  {
+    id: 2, type: 'fire',
+    city: 'Guadalajara', state: 'Jalisco',
+    lat: 20.6597, lng: -103.3496,
+    severity: 5,
+    fires: 60, blockades: 80,
+    desc: 'City turned into ghost town. Multiple vehicle fires across major avenues. Gas station set alight by CJNG members. 6 National Guard troops killed in Zapopan suburb. Burning vehicles blocked roads at shopping mall parking lots and major roads.',
+    source: 'ABC7 / AP / CBS News / OPB'
+  },
+  {
+    id: 3, type: 'conflict',
+    city: 'Zapopan', state: 'Jalisco',
+    lat: 20.7209, lng: -103.3917,
+    severity: 5,
+    fires: 20, blockades: 25,
+    desc: 'Six National Guard troops killed. Burning bus set on fire on main avenues by organized crime groups. Armed confrontations reported.',
+    source: 'AP / CBS News / AFP'
+  },
+  {
+    id: 4, type: 'fire',
+    city: 'Puerto Vallarta', state: 'Jalisco',
+    lat: 20.6534, lng: -105.2253,
+    severity: 5,
+    fires: 30, blockades: 35,
+    desc: 'Smoke billowing above beachfront hotels visible from beach. Prison riot: jail guard killed when prisoners rioted. All international and most domestic flights cancelled from PVR. Taxis and ride-shares suspended. Costco building and gas station set on fire.',
+    source: 'NBC News / Wikipedia / US Embassy / Southwest/Delta/Alaska Airlines'
+  },
+  {
+    id: 5, type: 'conflict',
+    city: 'Guadalajara International Airport (GDL)', state: 'Jalisco',
+    lat: 20.5218, lng: -103.3107,
+    severity: 4,
+    fires: 5, blockades: 10,
+    desc: 'Gunfire erupted just outside the terminal. People sprinting through airport in panic. Flights diverted and cancelled. Roadblocks blocked access routes to airport.',
+    source: 'Breitbart / Axios / US Embassy'
+  },
+  {
+    id: 6, type: 'block',
+    city: 'Cointzio', state: 'Michoacán',
+    lat: 19.5667, lng: -101.3167,
+    severity: 4,
+    fires: 15, blockades: 18,
+    desc: 'Charred vehicles on roads. Armed clashes reported. Situation remained active into Monday Feb 23. National Guard and state police deployed.',
+    source: 'AP / NPR'
+  },
+  {
+    id: 7, type: 'fire',
+    city: 'Morelia area', state: 'Michoacán',
+    lat: 19.7059, lng: -101.1949,
+    severity: 4,
+    fires: 12, blockades: 15,
+    desc: 'Multiple vehicle fires and roadblocks across Michoacán state. Rival criminal groups reportedly capitalizing on CJNG weakening.',
+    source: 'Al Jazeera / NBC News'
+  },
+  {
+    id: 8, type: 'fire',
+    city: 'Irapuato / Guanajuato State', state: 'Guanajuato',
+    lat: 20.6786, lng: -101.3539,
+    severity: 4,
+    fires: 20, blockades: 22,
+    desc: 'Significant vehicle fires and roadblocks across Guanajuato state, heavily contested CJNG-CSRL territory. At least some deaths reported.',
+    source: 'AP / ABC7'
+  },
+  {
+    id: 9, type: 'block',
+    city: 'Colima City', state: 'Colima',
+    lat: 19.2433, lng: -103.7242,
+    severity: 3,
+    fires: 10, blockades: 12,
+    desc: 'Highway blockades with torched vehicles reported across Colima state. Public transportation suspended.',
+    source: 'Al Jazeera'
+  },
+  {
+    id: 10, type: 'block',
+    city: 'Tepic', state: 'Nayarit',
+    lat: 21.5044, lng: -104.8946,
+    severity: 3,
+    fires: 8, blockades: 10,
+    desc: 'Roadblocks and burning vehicles reported in Nayarit. State bordering Jalisco, CJNG stronghold.',
+    source: 'Al Jazeera'
+  },
+  {
+    id: 11, type: 'fire',
+    city: 'Cancún / Highway 180', state: 'Quintana Roo',
+    lat: 21.1619, lng: -86.8515,
+    severity: 3,
+    fires: 5, blockades: 5,
+    desc: '3 cars set on fire on highway 180 between Cancún and Puerto Morelos. Police in Isla Mujeres on high alert at strategic points.',
+    source: 'Riviera Maya News'
+  },
+  {
+    id: 12, type: 'fire',
+    city: 'Playa del Carmen', state: 'Quintana Roo',
+    lat: 20.6296, lng: -87.0739,
+    severity: 3,
+    fires: 4, blockades: 3,
+    desc: '2 cars set ablaze in Centro Maya shopping mall parking lot ~10:30 AM. Another vehicle on fire outside private residence near Plaza Las Americas. Fire brigades deployed.',
+    source: 'Riviera Maya News'
+  },
+  {
+    id: 13, type: 'fire',
+    city: 'Tulum', state: 'Quintana Roo',
+    lat: 20.2118, lng: -87.4654,
+    severity: 3,
+    fires: 5, blockades: 4,
+    desc: '3 vehicles set on fire on highways outside town. Two OXXO convenience stores set alight with gasoline (La Veleta & Ejido neighborhoods). Vehicle burned near fire station.',
+    source: 'Riviera Maya News'
+  },
+  {
+    id: 14, type: 'block',
+    city: 'Cozumel', state: 'Quintana Roo',
+    lat: 20.4229, lng: -86.9223,
+    severity: 2,
+    fires: 2, blockades: 1,
+    desc: 'At least one store fire reported, likely linked to nationwide violence. Isolated incidents.',
+    source: 'Riviera Maya News'
+  },
+  {
+    id: 15, type: 'conflict',
+    city: 'Reynosa area', state: 'Tamaulipas',
+    lat: 26.0808, lng: -98.2978,
+    severity: 3,
+    fires: 8, blockades: 10,
+    desc: 'US State Department issued shelter-in-place warning for US citizens in Tamaulipas. Road blockades reported.',
+    source: 'PBS / US State Department / News4SA'
+  },
+  {
+    id: 16, type: 'block',
+    city: 'Acapulco / Chilpancingo', state: 'Guerrero',
+    lat: 17.5506, lng: -99.5024,
+    severity: 3,
+    fires: 7, blockades: 8,
+    desc: 'US State Department shelter-in-place warning for Guerrero. CJNG presence throughout state triggered retaliatory actions.',
+    source: 'US State Department / PBS'
+  },
+  {
+    id: 17, type: 'block',
+    city: 'Monterrey area', state: 'Nuevo León',
+    lat: 25.6714, lng: -100.3094,
+    severity: 2,
+    fires: 5, blockades: 6,
+    desc: 'US shelter-in-place warning for Nuevo León. Roadblocks reported. Situation less severe than western states.',
+    source: 'US State Department / News4SA'
+  },
+  {
+    id: 18, type: 'fire',
+    city: 'Various municipalities', state: 'México State',
+    lat: 19.4969, lng: -99.7233,
+    severity: 2,
+    fires: 6, blockades: 7,
+    desc: 'Vehicle fires and blockades reported. Part of the 20-state nationwide CJNG retaliation.',
+    source: 'AP / ABC7'
+  },
+  {
+    id: 19, type: 'fire',
+    city: 'Manzanillo area', state: 'Colima (coast)',
+    lat: 19.1046, lng: -104.3289,
+    severity: 2,
+    fires: 5, blockades: 6,
+    desc: 'Vehicle fires along coastal roads. Port access temporarily affected.',
+    source: 'Al Jazeera / AP'
+  },
+  {
+    id: 20, type: 'conflict',
+    city: 'Mexico City', state: 'CDMX',
+    lat: 19.4326, lng: -99.1332,
+    severity: 2,
+    fires: 3, blockades: 3,
+    desc: 'Isolated incidents. El Mencho died en route here by helicopter. Government coordination center. President Sheinbaum issued calm statement from here.',
+    source: 'NBC News / Defense Ministry'
+  }
+];
+
+// ── MAP INIT ─────────────────────────────────────────────────────────────────
+const map = L.map('map', {
+  center: [20.5, -100.5],
+  zoom: 6,
+  zoomControl: false
+});
+
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+// Dark tile layer
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '© OpenStreetMap contributors © CARTO',
+  maxZoom: 18
+}).addTo(map);
+
+// Color map
+const colors = {
+  origin:   '#8844ff',
+  fire:     '#ff2233',
+  block:    '#ff6600',
+  conflict: '#ffcc00'
+};
+const glows = {
+  origin:   'rgba(136,68,255,0.5)',
+  fire:     'rgba(255,34,51,0.5)',
+  block:    'rgba(255,102,0,0.5)',
+  conflict: 'rgba(255,204,0,0.4)'
+};
+const icons = {
+  origin:   '★',
+  fire:     '🔥',
+  block:    '🚧',
+  conflict: '⚡'
+};
+const tagClass = {
+  origin:   'tag-fire',
+  fire:     'tag-fire',
+  block:    'tag-block',
+  conflict: 'tag-conflict'
+};
+
+// ── MARKERS ──────────────────────────────────────────────────────────────────
+let markers = [];
+
+function makeCircleIcon(inc) {
+  const r = inc.type === 'origin' ? 22 : 8 + inc.severity * 3;
+  const c = colors[inc.type];
+  const g = glows[inc.type];
+  return L.divIcon({
+    className: '',
+    html: `<div style="
+      width:${r*2}px;height:${r*2}px;
+      border-radius:50%;
+      background:${c}22;
+      border:2px solid ${c};
+      box-shadow:0 0 ${r}px ${g}, inset 0 0 ${r/2}px ${g};
+      display:flex;align-items:center;justify-content:center;
+      font-size:${r*0.7}px;
+      animation: pulse-${inc.type} 2s ease infinite;
+      position:relative;
+    ">${inc.type==='origin'?'★':''}</div>`,
+    iconSize: [r*2, r*2],
+    iconAnchor: [r, r]
+  });
+}
+
+function buildPopup(inc) {
+  return `<div class="popup-inner">
+    <div class="popup-header">
+      <div class="popup-icon">${icons[inc.type]}</div>
+      <div>
+        <div class="popup-state">${inc.state}</div>
+        <div class="popup-city">${inc.city}</div>
+      </div>
+    </div>
+    <div class="popup-row">
+      <span class="popup-key">TYPE</span>
+      <span class="popup-val">${inc.type.toUpperCase()}</span>
+    </div>
+    <div class="popup-row">
+      <span class="popup-key">EST. FIRES</span>
+      <span class="popup-val" style="color:#ff2233;">${inc.fires > 0 ? inc.fires+'+' : 'N/A'}</span>
+    </div>
+    <div class="popup-row">
+      <span class="popup-key">BLOCKADES</span>
+      <span class="popup-val" style="color:#ff6600;">${inc.blockades > 0 ? inc.blockades+' pts' : 'N/A'}</span>
+    </div>
+    <div class="popup-row">
+      <span class="popup-key">SEVERITY</span>
+      <span class="popup-val">${'█'.repeat(inc.severity)}${'░'.repeat(5-inc.severity)}</span>
+    </div>
+    <div class="popup-desc">${inc.desc}</div>
+    <div class="popup-source">SRC: ${inc.source}</div>
+  </div>`;
+}
+
+function renderMarkers(filter) {
+  markers.forEach(m => map.removeLayer(m.marker));
+  markers = [];
+  incidents.forEach(inc => {
+    if (filter && filter !== 'all' && inc.type !== filter && !(filter==='origin' && inc.type==='origin')) return;
+    const m = L.marker([inc.lat, inc.lng], { icon: makeCircleIcon(inc) })
+      .addTo(map)
+      .bindPopup(buildPopup(inc), { maxWidth: 320 });
+    m.on('click', () => highlightListItem(inc.id));
+    markers.push({ marker: m, inc });
+  });
+}
+
+// ── SIDEBAR LIST ─────────────────────────────────────────────────────────────
+function buildList() {
+  const list = document.getElementById('incidentList');
+  list.innerHTML = '';
+  const sorted = [...incidents].sort((a,b) => b.severity - a.severity);
+  sorted.forEach(inc => {
+    const div = document.createElement('div');
+    div.className = 'incident-item';
+    div.id = `inc-${inc.id}`;
+    div.innerHTML = `
+      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px;">
+        <span class="incident-tag ${tagClass[inc.type]}">${inc.type.toUpperCase()}</span>
+        <span class="incident-state" style="color:${colors[inc.type]}">${inc.state}</span>
+      </div>
+      <div class="incident-city">${inc.city}</div>
+      <div class="incident-detail">${inc.fires>0?inc.fires+'+ vehicles':''}${inc.fires>0&&inc.blockades>0?' · ':''}${inc.blockades>0?inc.blockades+' blockade pts':''}</div>
+    `;
+    div.onclick = () => {
+      map.setView([inc.lat, inc.lng], 9, { animate: true });
+      const m = markers.find(m => m.inc.id === inc.id);
+      if (m) m.marker.openPopup();
+    };
+    list.appendChild(div);
+  });
+}
+
+function highlightListItem(id) {
+  document.querySelectorAll('.incident-item').forEach(el => el.style.background='');
+  const el = document.getElementById(`inc-${id}`);
+  if (el) {
+    el.style.background = 'rgba(255,34,51,0.1)';
+    el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+  }
+}
+
+// ── FILTERS ──────────────────────────────────────────────────────────────────
+function filterAll() {
+  setActiveBtn('ALL');
+  renderMarkers('all');
+}
+function filterType(type) {
+  setActiveBtn(type);
+  renderMarkers(type);
+}
+function setActiveBtn(label) {
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    b.classList.toggle('active',
+      b.textContent.toLowerCase().includes(label.toLowerCase()) ||
+      (label==='ALL' && b.textContent==='ALL')
+    );
+  });
+}
+
+// ── TIMESTAMP ────────────────────────────────────────────────────────────────
+function updateTimestamp() {
+  const now = new Date();
+  document.getElementById('ts').textContent = now.toUTCString().replace('GMT','UTC');
+}
+updateTimestamp();
+setInterval(updateTimestamp, 1000);
+
+// ── PULSING ANIMATION via CSS injection ──────────────────────────────────────
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes pulse-fire    { 0%,100%{box-shadow:0 0 12px rgba(255,34,51,0.5)}   50%{box-shadow:0 0 24px rgba(255,34,51,0.9)} }
+  @keyframes pulse-block   { 0%,100%{box-shadow:0 0 12px rgba(255,102,0,0.5)}  50%{box-shadow:0 0 24px rgba(255,102,0,0.9)} }
+  @keyframes pulse-conflict{ 0%,100%{box-shadow:0 0 12px rgba(255,204,0,0.4)} 50%{box-shadow:0 0 24px rgba(255,204,0,0.8)} }
+  @keyframes pulse-origin  { 0%,100%{box-shadow:0 0 16px rgba(136,68,255,0.5)} 50%{box-shadow:0 0 32px rgba(136,68,255,0.9)} }
+`;
+document.head.appendChild(style);
+
+// ── HEAT OVERLAY using circle layers ─────────────────────────────────────────
+// Intensity circles (semi-transparent, large radius, no interaction)
+incidents.filter(i=>i.type!=='origin').forEach(inc => {
+  const c = colors[inc.type];
+  L.circle([inc.lat, inc.lng], {
+    radius: inc.severity * 18000,
+    color: 'transparent',
+    fillColor: c,
+    fillOpacity: 0.03 * inc.severity,
+    interactive: false
+  }).addTo(map);
+});
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+renderMarkers('all');
+buildList();
+
+// ── LINKEDIN SHARE ────────────────────────────────────────────────────────────
+const DEFAULT_POST = `🚨 BREAKING SECURITY ANALYSIS: CJNG Cartel Retaliation — Mexico Crisis Map
+
+Following the death of El Mencho (Nemesio Oseguera Cervantes), founder of the Jalisco New Generation Cartel (CJNG), on February 22, 2026, coordinated retaliatory violence erupted across 20 Mexican states within hours.
+
+📊 Key metrics from my interactive intelligence map:
+• 252+ road blockades across Mexico
+• 60+ vehicle fires in Guadalajara alone
+• 14+ confirmed dead (including 6 National Guard troops in Zapopan)
+• 50+ flights cancelled at Puerto Vallarta & Guadalajara airports
+• Active incidents reported in Michoacán, Quintana Roo, Guanajuato, Tamaulipas & more
+
+This event underscores how a single kinetic action against cartel leadership can trigger cascading security crises with major implications for trade routes, supply chains, tourism, and cross-border business operations.
+
+Explore the full interactive map with sourced incident data by location, type (fires, blockades, armed conflict), and severity.
+
+#MexicoSecurity #OrganizedCrime #CJNG #SupplyChainRisk #SecurityAnalysis #GeopoliticalRisk #LatinAmerica`;
+
+function openShareModal() {
+  const textarea = document.getElementById('liPostText');
+  const urlInput = document.getElementById('shareUrl');
+  textarea.value = DEFAULT_POST;
+  urlInput.value = window.location.href;
+  updateCharCount();
+  document.getElementById('shareModal').classList.add('open');
+}
+
+function closeShareModal() {
+  document.getElementById('shareModal').classList.remove('open');
+}
+
+function handleOverlayClick(e) {
+  if (e.target === document.getElementById('shareModal')) closeShareModal();
+}
+
+function updateCharCount() {
+  const text = document.getElementById('liPostText').value;
+  const len = text.length;
+  const el = document.getElementById('charCount');
+  el.textContent = `${len} / 3000`;
+  el.className = 'char-count' + (len > 2800 ? ' over' : len > 2400 ? ' warn' : '');
+}
+
+function copyPostText() {
+  const text = document.getElementById('liPostText').value;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyTextBtn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy Text'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function copyUrl() {
+  const url = document.getElementById('shareUrl').value;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('copyUrlBtn');
+    btn.textContent = '✓ Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy URL'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+function postToLinkedIn() {
+  const text = document.getElementById('liPostText').value;
+  const url = document.getElementById('shareUrl').value;
+  // Copy the post text to clipboard first so user can paste it
+  navigator.clipboard.writeText(text).then(() => {
+    // Open LinkedIn share dialog with the URL pre-filled
+    const liUrl = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url);
+    window.open(liUrl, '_blank', 'width=600,height=600,noopener,noreferrer');
+    // Show instruction overlay briefly
+    const btn = document.querySelector('.modal-post-btn');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '✓ Text copied — paste in LinkedIn!';
+    btn.style.background = '#22cc66';
+    setTimeout(() => { btn.innerHTML = orig; btn.style.background = ''; }, 4000);
+  }).catch(() => {
+    // Fallback if clipboard denied
+    const liUrl = 'https://www.linkedin.com/sharing/share-offsite/?url=' + encodeURIComponent(url) + '&summary=' + encodeURIComponent(text.substring(0, 256));
+    window.open(liUrl, '_blank', 'width=600,height=600,noopener,noreferrer');
+  });
+}
+</script>
+</body>
+</html>
